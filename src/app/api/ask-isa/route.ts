@@ -2,10 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   let body: any = null;
-  
+
   try {
     body = await request.json();
-    console.log('Body recibido en ask-isa:', body);
   } catch (err) {
     return NextResponse.json(
       { error: 'Invalid or empty JSON body' },
@@ -20,10 +19,19 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const CODEGPT_API_URL = 'https://api-beta.codegpt.co/api/v1/chat/completions';
-  const ORG_ID = 'd5e1b2bf-2bde-4445-adec-7f5c32277f38';
-  const AGENT_ID = 'e2a9e0fc-6e00-4ebf-bc16-1b0d742eecb7';
-  const API_KEY = 'sk-6c0f9e72-cd5e-41d7-bdaf-99614bb3a225';
+  // Get configuration from environment variables
+  const CODEGPT_API_URL = process.env.CODEGPT_API_URL;
+  const ORG_ID = process.env.CODEGPT_ORG_ID;
+  const AGENT_ID = process.env.CODEGPT_AGENT_ID;
+  const API_KEY = process.env.CODEGPT_API_KEY;
+
+  // Validate environment variables
+  if (!CODEGPT_API_URL || !ORG_ID || !AGENT_ID || !API_KEY) {
+    return NextResponse.json(
+      { error: 'Missing required environment variables' },
+      { status: 500 }
+    );
+  }
 
   // Construir historial de mensajes desde el frontend
   const messages = body.messages || [];
@@ -32,7 +40,7 @@ export async function POST(request: NextRequest) {
     agentId: AGENT_ID,
     messages,
     format: 'text',
-    stream: false // Para simplificar la integración inicial
+    stream: false, // Para simplificar la integración inicial
   };
 
   try {
@@ -42,17 +50,14 @@ export async function POST(request: NextRequest) {
         accept: 'application/json',
         'content-type': 'application/json',
         'CodeGPT-Org-Id': ORG_ID,
-        authorization: `Bearer ${API_KEY}`
+        authorization: `Bearer ${API_KEY}`,
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
       const error = await response.text();
-      return NextResponse.json(
-        { error },
-        { status: 500 }
-      );
+      return NextResponse.json({ error }, { status: 500 });
     }
 
     let data;
@@ -62,36 +67,32 @@ export async function POST(request: NextRequest) {
       // Si no es JSON, intenta leer como texto
       data = await response.text();
     }
-    
-    console.log('CodeGPT API response:', data);
-    
+
+    // Response processed successfully
+
     // Si la respuesta es string plano, envuélvela en { result: ... }
     if (typeof data === 'string') {
       return NextResponse.json(
         { result: data },
-        { 
+        {
           status: 200,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         }
       );
     }
-    
+
     if (!data || (!data.choices && !data.result)) {
       return NextResponse.json(
         { error: 'No valid answer from CodeGPT', data },
         { status: 502 }
       );
     }
-    
+
     return NextResponse.json(data, {
       status: 200,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     });
-    
   } catch (err: any) {
-    return NextResponse.json(
-      { error: err.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

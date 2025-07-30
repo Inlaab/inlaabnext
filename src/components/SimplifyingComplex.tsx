@@ -7,10 +7,10 @@ const SimplifyingComplex = () => {
     // Add intersection observer for scroll animations
     const observerOptions = {
       threshold: 0.1,
-      rootMargin: '0px 0px -50px 0px'
+      rootMargin: '0px 0px -50px 0px',
     };
 
-    const observer = new IntersectionObserver((entries) => {
+    const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           (entry.target as HTMLElement).style.animationPlayState = 'running';
@@ -19,10 +19,12 @@ const SimplifyingComplex = () => {
     }, observerOptions);
 
     // Observe animated elements
-    document.querySelectorAll('.animate-fade-in, .animate-slide-up').forEach(el => {
-      (el as HTMLElement).style.animationPlayState = 'paused';
-      observer.observe(el);
-    });
+    document
+      .querySelectorAll('.animate-fade-in, .animate-slide-up')
+      .forEach(el => {
+        (el as HTMLElement).style.animationPlayState = 'paused';
+        observer.observe(el);
+      });
 
     // Cleanup
     return () => {
@@ -37,14 +39,22 @@ const SimplifyingComplex = () => {
         {/* Forma triangular grande en la esquina superior derecha */}
         <div className="absolute -top-32 -right-32 w-96 h-96 opacity-20">
           <svg viewBox="0 0 400 400" className="w-full h-full">
-            <polygon points="200,50 350,350 50,350" fill="currentColor" className="text-red-800"/>
+            <polygon
+              points="200,50 350,350 50,350"
+              fill="currentColor"
+              className="text-red-800"
+            />
           </svg>
         </div>
-        
+
         {/* Forma geométrica adicional en la parte inferior */}
         <div className="absolute -bottom-24 -right-24 w-80 h-80 opacity-15">
           <svg viewBox="0 0 320 320" className="w-full h-full">
-            <polygon points="160,20 300,140 300,280 160,300 20,280 20,140" fill="currentColor" className="text-red-900"/>
+            <polygon
+              points="160,20 300,140 300,280 160,300 20,280 20,140"
+              fill="currentColor"
+              className="text-red-900"
+            />
           </svg>
         </div>
       </div>
@@ -60,15 +70,24 @@ const SimplifyingComplex = () => {
 
             {/* Párrafos de contenido */}
             <p className="text-base leading-relaxed font-light">
-              Often, the world of development can seem complex due to its dynamics and multiple languages. That&apos;s why we decided to stick to just one: <span className="font-medium text-red-100">Yours</span>.
+              Often, the world of development can seem complex due to its
+              dynamics and multiple languages. That&apos;s why we decided to
+              stick to just one:{' '}
+              <span className="font-medium text-red-100">Yours</span>.
             </p>
 
             <p className="text-base leading-relaxed font-light">
-              We believe that technology should be accessible to everyone because it impacts our own dynamics, enhances them, and elevates knowledge to a higher level. That&apos;s why we speak plainly, understand needs without complications, and always in your language.
+              We believe that technology should be accessible to everyone
+              because it impacts our own dynamics, enhances them, and elevates
+              knowledge to a higher level. That&apos;s why we speak plainly,
+              understand needs without complications, and always in your
+              language.
             </p>
 
             <p className="text-base leading-relaxed font-light">
-              As for the rest, we take care of it because we understand the importance of ideas as well as the power of processes that transform lives.
+              As for the rest, we take care of it because we understand the
+              importance of ideas as well as the power of processes that
+              transform lives.
             </p>
           </div>
 
@@ -81,9 +100,12 @@ const SimplifyingComplex = () => {
                   LET&apos;S GET STARTED
                 </span>
               </div>
-              
+
               {/* Título principal */}
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-rajdhani font-bold text-white mb-8 animate-slide-up relative z-10" style={{animationDelay: '0.2s'}}>
+              <h2
+                className="text-4xl md:text-5xl lg:text-6xl font-rajdhani font-bold text-white mb-8 animate-slide-up relative z-10"
+                style={{ animationDelay: '0.2s' }}
+              >
                 Simplifying the Complex
               </h2>
             </div>
@@ -95,25 +117,29 @@ const SimplifyingComplex = () => {
       <style jsx>{`
         /* Animaciones */
         @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
         }
-        
+
         @keyframes slideUp {
-          from { 
-            opacity: 0; 
-            transform: translateY(30px); 
+          from {
+            opacity: 0;
+            transform: translateY(30px);
           }
-          to { 
-            opacity: 1; 
-            transform: translateY(0); 
+          to {
+            opacity: 1;
+            transform: translateY(0);
           }
         }
-        
+
         .animate-fade-in {
           animation: fadeIn 0.8s ease-out forwards;
         }
-        
+
         .animate-slide-up {
           animation: slideUp 0.8s ease-out forwards;
         }
@@ -123,7 +149,7 @@ const SimplifyingComplex = () => {
           .grid {
             text-align: center;
           }
-          
+
           .text-right {
             text-align: center;
           }

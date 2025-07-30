@@ -7,10 +7,10 @@ const OurOffer = () => {
     // Add intersection observer for scroll animations
     const observerOptions = {
       threshold: 0.1,
-      rootMargin: '0px 0px -50px 0px'
+      rootMargin: '0px 0px -50px 0px',
     };
 
-    const observer = new IntersectionObserver((entries) => {
+    const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           (entry.target as HTMLElement).style.animationPlayState = 'running';
@@ -19,10 +19,12 @@ const OurOffer = () => {
     }, observerOptions);
 
     // Observe animated elements
-    document.querySelectorAll('.animate-fade-in, .animate-slide-up').forEach(el => {
-      (el as HTMLElement).style.animationPlayState = 'paused';
-      observer.observe(el);
-    });
+    document
+      .querySelectorAll('.animate-fade-in, .animate-slide-up')
+      .forEach(el => {
+        (el as HTMLElement).style.animationPlayState = 'paused';
+        observer.observe(el);
+      });
 
     // Cleanup
     return () => {
@@ -39,7 +41,7 @@ const OurOffer = () => {
         <div className="absolute top-32 right-20 w-24 h-24 rounded-full bg-gradient-to-br from-inlaab-orange/20 to-inlaab-red/10"></div>
         <div className="absolute bottom-20 left-32 w-40 h-40 rounded-full bg-gradient-to-br from-inlaab-yellow/20 to-inlaab-cream/30"></div>
         <div className="absolute bottom-32 right-10 w-28 h-28 rounded-full bg-gradient-to-br from-inlaab-orange/15 to-inlaab-yellow/25"></div>
-        
+
         {/* Formas adicionales para crear profundidad */}
         <div className="absolute top-1/2 left-1/4 w-20 h-20 rounded-full bg-gradient-to-br from-inlaab-yellow/25 to-transparent"></div>
         <div className="absolute top-1/3 right-1/3 w-16 h-16 rounded-full bg-gradient-to-br from-inlaab-orange/20 to-transparent"></div>
@@ -55,7 +57,10 @@ const OurOffer = () => {
           </div>
 
           {/* Columna derecha - Contenido */}
-          <div className="text-inlaab-blue space-y-6 animate-slide-up" style={{animationDelay: '0.2s'}}>
+          <div
+            className="text-inlaab-blue space-y-6 animate-slide-up"
+            style={{ animationDelay: '0.2s' }}
+          >
             {/* Subtítulo */}
             <h3 className="text-xl font-semibold text-inlaab-blue mb-6">
               Our Offer
@@ -63,11 +68,17 @@ const OurOffer = () => {
 
             {/* Párrafos de contenido */}
             <p className="text-base leading-relaxed font-light">
-              At <span className="font-medium text-inlaab-red">Inlaab</span>, innovation is the cornerstone that drives us to tackle complex challenges and open new opportunities. Through close collaboration with our clients, we make their vision our own, striving to deliver the best of our team in every project.
+              At <span className="font-medium text-inlaab-red">Inlaab</span>,
+              innovation is the cornerstone that drives us to tackle complex
+              challenges and open new opportunities. Through close collaboration
+              with our clients, we make their vision our own, striving to
+              deliver the best of our team in every project.
             </p>
 
             <p className="text-base leading-relaxed font-light">
-              Maintaining integrity as our guiding principle, we operate with transparency and trust. Our agility ensures adaptability in a dynamic business environment, keeping our clients one step ahead.
+              Maintaining integrity as our guiding principle, we operate with
+              transparency and trust. Our agility ensures adaptability in a
+              dynamic business environment, keeping our clients one step ahead.
             </p>
           </div>
         </div>
@@ -77,25 +88,29 @@ const OurOffer = () => {
       <style jsx>{`
         /* Animaciones */
         @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
         }
-        
+
         @keyframes slideUp {
-          from { 
-            opacity: 0; 
-            transform: translateY(30px); 
+          from {
+            opacity: 0;
+            transform: translateY(30px);
           }
-          to { 
-            opacity: 1; 
-            transform: translateY(0); 
+          to {
+            opacity: 1;
+            transform: translateY(0);
           }
         }
-        
+
         .animate-fade-in {
           animation: fadeIn 0.8s ease-out forwards;
         }
-        
+
         .animate-slide-up {
           animation: slideUp 0.8s ease-out forwards;
         }
