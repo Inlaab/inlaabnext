@@ -49,9 +49,9 @@ const ChatBubbleComponent: React.FC<ChatBubbleProps> = ({
     }
   }, []);
 
-  // Efecto para configurar el botón del chat
+  // Effect to set up the chat button
   useEffect(() => {
-    // Solo se ejecuta en el navegador
+    // This effect runs only in the browser
     if (typeof window === 'undefined') return;
 
     const chatButton = document.getElementById(
@@ -68,9 +68,9 @@ const ChatBubbleComponent: React.FC<ChatBubbleProps> = ({
     return () => {};
   }, []);
 
-  // Efecto para controlar la visibilidad del aside y el padding del contenido principal
+  // Effect to control content visibility
   useEffect(() => {
-    // Solo se ejecuta en el navegador
+    // This effect runs only in the browser
     if (typeof window === 'undefined') return;
 
     const chatAside = document.getElementById('chat-aside');
@@ -82,40 +82,40 @@ const ChatBubbleComponent: React.FC<ChatBubbleProps> = ({
 
     if (chatAside && mainContent && chatButton) {
       if (open) {
-        // Mostrar el chat con animación elegante
+        // Show with smooth animation
         chatAside.classList.remove('translate-x-full', 'opacity-0', 'scale-95');
         chatAside.classList.add('translate-x-0', 'opacity-100', 'scale-100');
 
-        // Ocultar el botón de chat cuando esté abierto
+        // Hide the close button when open
         chatButton.style.opacity = '0';
         chatButton.style.pointerEvents = 'none';
         chatButton.style.transform = 'scale(0.8)';
 
-        // Agregar clase para padding automático en CSS
+        // Add class for mobile devices padding
         document.body.classList.add('chat-open');
 
-        // Overlay para móviles
+        // Overlay for mobile devices
         if (overlay && window.innerWidth < 1024) {
           overlay.classList.remove('opacity-0', 'pointer-events-none');
-          overlay.classList.add('opacity-0', 'pointer-events-auto');
+          overlay.classList.add('opacity-100', 'pointer-events-auto');
 
           overlayClickHandler = () => setOpen(false);
           overlay.addEventListener('click', overlayClickHandler);
         }
       } else {
-        // Ocultar el chat con animación elegante
+        // Hide with smooth animation
         chatAside.classList.remove('translate-x-0', 'opacity-100', 'scale-100');
         chatAside.classList.add('translate-x-full', 'opacity-0', 'scale-95');
 
-        // Mostrar el botón de chat cuando esté cerrado
+        // Show the open button when closed
         chatButton.style.opacity = '1';
         chatButton.style.pointerEvents = 'auto';
         chatButton.style.transform = 'scale(1)';
 
-        // Remover clase para padding automático
+        // Remove class for mobile devices padding
         document.body.classList.remove('chat-open');
 
-        // Ocultar overlay
+        // Hide overlay
         if (overlay) {
           overlay.classList.remove('opacity-100');
           overlay.classList.add('opacity-0', 'pointer-events-none');
@@ -131,19 +131,19 @@ const ChatBubbleComponent: React.FC<ChatBubbleProps> = ({
     };
   }, [open]);
 
-  // Efecto para hacer scroll al final del chat
+  // Effect to scroll to bottom when there are new messages
   useEffect(() => {
     if (chatEndRef.current) {
       chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
     
-    // Notificar al componente padre cuando los mensajes cambien
+    // Notify parent component when messages change
     if (onMessagesChange) {
       onMessagesChange(messages);
     }
   }, [messages, onMessagesChange]);
 
-  // Efecto para manejar el redimensionamiento de la ventana
+  // Effect to handle window resizing
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -174,7 +174,7 @@ const ChatBubbleComponent: React.FC<ChatBubbleProps> = ({
     setInput('');
     setLoading(true);
 
-    // Agregar mensaje del usuario
+    // Add user message
     const newMessages = [
       ...messages,
       { role: 'user' as const, content: userMessage },
@@ -242,24 +242,26 @@ const ChatBubbleComponent: React.FC<ChatBubbleProps> = ({
   const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit(e as any);
+      // Create a synthetic form event to match handleSubmit's expected type
+      const formEvent = { preventDefault: () => {} } as React.FormEvent<HTMLFormElement>;
+      handleSubmit(formEvent);
     }
   };
 
   const handleClearChat = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     if (window.confirm('Are you sure you want to clear the conversation? This cannot be undone.')) {
-      // Crear un nuevo array con el mensaje inicial
+      // Create a new array with the initial message
       const newMessages = [{
         role: 'assistant' as const,
         content: "Hi! I'm ISA, your Inlaab Sales Assistant. How can I help you today?"
       }];
       
-      // Forzar una actualización del estado
-      setMessages([]); // Primero vaciar para forzar la actualización
+      // Force a state update
+      setMessages([]); // First empty to force update
       setInput('');
       
-      // Usar setTimeout para asegurar que el estado se actualice
+      // Use setTimeout to ensure state updates
       setTimeout(() => {
         setMessages(newMessages);
         if (onMessagesChange) {
