@@ -112,19 +112,19 @@ const Hero = () => {
       {/* Contenido principal centrado */}
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 text-center text-white">
         {/* Título principal */}
-        <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-light mb-8 max-w-6xl font-rajdhani leading-none whitespace-nowrap">
-          We are{' '}
-          <span className="text-inlaab-cream font-medium font-rajdhani">
-            Developers
-          </span>
-          ,{' '}
+        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light mb-8 max-w-6xl font-rajdhani leading-tight">
+          <span className="block sm:inline">We are{' '}
+            <span className="text-inlaab-cream font-medium font-rajdhani">
+              Developers
+            </span>
+            ,
+          </span>{' '}
           <span
-            className="text-5xl md:text-7xl lg:text-8xl text-white font-light italic"
+            className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl text-white font-light italic inline-block"
             style={{ fontFamily: 'Playfair Display' }}
           >
-            of Business
+            of Business.
           </span>
-          .
         </h1>
 
         {/* Subtítulo */}

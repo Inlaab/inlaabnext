@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+interface RequestBody {
+  messages: Array<{
+    role: 'user' | 'assistant';
+    content: string;
+  }>;
+}
+
 export async function POST(request: NextRequest) {
-  let body: any = null;
+  let body: RequestBody | null = null;
 
   try {
     body = await request.json();
@@ -25,10 +32,20 @@ export async function POST(request: NextRequest) {
   const AGENT_ID = process.env.CODEGPT_AGENT_ID;
   const API_KEY = process.env.CODEGPT_API_KEY;
 
-  // Validate environment variables
-  if (!CODEGPT_API_URL || !ORG_ID || !AGENT_ID || !API_KEY) {
+  // Validate environment variables with more detailed error message
+  const missingVars = [];
+  if (!CODEGPT_API_URL) missingVars.push('CODEGPT_API_URL');
+  if (!ORG_ID) missingVars.push('CODEGPT_ORG_ID');
+  if (!AGENT_ID) missingVars.push('CODEGPT_AGENT_ID');
+  if (!API_KEY) missingVars.push('CODEGPT_API_KEY');
+  
+  if (missingVars.length > 0) {
     return NextResponse.json(
-      { error: 'Missing required environment variables' },
+      { 
+        error: 'Missing required environment variables',
+        missingVariables: missingVars,
+        message: 'Please configure the missing environment variables in your Vercel project settings.'
+      },
       { status: 500 }
     );
   }
@@ -44,20 +61,38 @@ export async function POST(request: NextRequest) {
   };
 
   try {
-    const response = await fetch(CODEGPT_API_URL, {
+    // Type assertion since we've already validated these variables
+    const apiUrl = CODEGPT_API_URL!;
+    // Create headers object with type assertion
+    const headers = new Headers();
+    headers.append('accept', 'application/json');
+    headers.append('content-type', 'application/json');
+    headers.append('CodeGPT-Org-Id', ORG_ID!);
+    headers.append('authorization', `Bearer ${API_KEY}`);
+
+    const response = await fetch(apiUrl, {
       method: 'POST',
-      headers: {
-        accept: 'application/json',
-        'content-type': 'application/json',
-        'CodeGPT-Org-Id': ORG_ID,
-        authorization: `Bearer ${API_KEY}`,
-      },
+      headers,
       body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      return NextResponse.json({ error }, { status: 500 });
+      let errorText;
+      try {
+        const errorData = await response.json();
+        errorText = JSON.stringify(errorData);
+      } catch {
+        errorText = await response.text();
+      }
+      
+      return NextResponse.json({ 
+        error: 'Error from CodeGPT API',
+        statusCode: response.status,
+        statusText: response.statusText,
+        details: errorText
+      }, { 
+        status: response.status 
+      });
     }
 
     let data;
@@ -92,7 +127,20 @@ export async function POST(request: NextRequest) {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (error) {
+    const err = error as Error;
+    // Only log in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error in ask-isa API route:', err);
+    }
+    
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      message: err.message,
+      // Only include stack trace in development
+      ...(process.env.NODE_ENV === 'development' ? { stack: err.stack } : {})
+    }, { 
+      status: 500 
+    });
   }
 }

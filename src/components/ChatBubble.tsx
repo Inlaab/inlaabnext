@@ -1,15 +1,15 @@
 'use client';
 
 import { marked } from 'marked';
+import Image from 'next/image';
 import React, {
+  useCallback,
   useEffect,
   useRef,
   useState,
-  useCallback,
   type ChangeEvent,
   type FormEvent,
 } from 'react';
-import Image from 'next/image';
 
 // Colors defined in Tailwind CSS config
 
@@ -20,15 +20,22 @@ type Message = {
 
 interface ChatBubbleProps {
   initialMessages?: Array<{ role: 'user' | 'assistant'; content: string }>;
-  onMessagesChange?: (messages: Array<{ role: 'user' | 'assistant'; content: string }>) => void;
+  onMessagesChange?: (
+    messages: Array<{ role: 'user' | 'assistant'; content: string }>
+  ) => void;
+  onChatToggle?: (isOpen: boolean) => void;
 }
 
-const ChatBubbleComponent: React.FC<ChatBubbleProps> = ({ 
-  initialMessages = [{
-    role: 'assistant',
-    content: "Hi! I'm ISA, your Inlaab Sales Assistant. How can I help you today?",
-  }],
-  onMessagesChange 
+const ChatBubbleComponent: React.FC<ChatBubbleProps> = ({
+  initialMessages = [
+    {
+      role: 'assistant',
+      content:
+        "Hi! I'm ISA, your Inlaab Sales Assistant. How can I help you today?",
+    },
+  ],
+  onMessagesChange,
+  onChatToggle,
 }) => {
   function renderMarkdown(text: string) {
     return marked.parse(text, { breaks: true });
@@ -40,13 +47,12 @@ const ChatBubbleComponent: React.FC<ChatBubbleProps> = ({
   const [loading, setLoading] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatButtonRef = useRef<HTMLButtonElement | null>(null);
-  
+
   // Function to copy text to clipboard
   const copyToClipboard = useCallback(async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-    } catch (err) {
-    }
+    } catch (err) {}
   }, []);
 
   // Effect to set up the chat button
@@ -77,6 +83,7 @@ const ChatBubbleComponent: React.FC<ChatBubbleProps> = ({
     const mainContent = document.getElementById('main-content');
     const chatButton = document.getElementById('chat-button');
     const overlay = document.getElementById('chat-overlay');
+    const navbar = document.getElementById('hero-navbar');
 
     let overlayClickHandler: (() => void) | null = null;
 
@@ -90,6 +97,14 @@ const ChatBubbleComponent: React.FC<ChatBubbleProps> = ({
         chatButton.style.opacity = '0';
         chatButton.style.pointerEvents = 'none';
         chatButton.style.transform = 'scale(0.8)';
+
+        // Hide navbar on mobile when chat is open
+        if (navbar && window.innerWidth < 640) { // sm breakpoint
+          navbar.style.display = 'none';
+        }
+
+        // Notify parent component that chat is open
+        if (onChatToggle) onChatToggle(true);
 
         // Add class for mobile devices padding
         document.body.classList.add('chat-open');
@@ -107,12 +122,20 @@ const ChatBubbleComponent: React.FC<ChatBubbleProps> = ({
         chatAside.classList.remove('translate-x-0', 'opacity-100', 'scale-100');
         chatAside.classList.add('translate-x-full', 'opacity-0', 'scale-95');
 
-        // Show the open button when closed
+        // Reset styles when closing
         chatButton.style.opacity = '1';
         chatButton.style.pointerEvents = 'auto';
         chatButton.style.transform = 'scale(1)';
 
-        // Remove class for mobile devices padding
+        // Show navbar again on mobile when chat is closed
+        if (navbar && window.innerWidth < 640) { // sm breakpoint
+          navbar.style.display = 'block';
+        }
+
+        // Notify parent component that chat is closed
+        if (onChatToggle) onChatToggle(false);
+
+        // Enable scrolling
         document.body.classList.remove('chat-open');
 
         // Hide overlay
@@ -129,14 +152,14 @@ const ChatBubbleComponent: React.FC<ChatBubbleProps> = ({
         overlay.removeEventListener('click', overlayClickHandler);
       }
     };
-  }, [open]);
+  }, [open, onChatToggle]);
 
   // Effect to scroll to bottom when there are new messages
   useEffect(() => {
     if (chatEndRef.current) {
       chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-    
+
     // Notify parent component when messages change
     if (onMessagesChange) {
       onMessagesChange(messages);
@@ -180,7 +203,7 @@ const ChatBubbleComponent: React.FC<ChatBubbleProps> = ({
       { role: 'user' as const, content: userMessage },
     ];
     setMessages(newMessages);
-    
+
     // Notificar al componente padre
     if (onMessagesChange) {
       onMessagesChange(newMessages);
@@ -243,47 +266,59 @@ const ChatBubbleComponent: React.FC<ChatBubbleProps> = ({
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       // Create a synthetic form event to match handleSubmit's expected type
-      const formEvent = { preventDefault: () => {} } as React.FormEvent<HTMLFormElement>;
+      const formEvent = {
+        preventDefault: () => {},
+      } as React.FormEvent<HTMLFormElement>;
       handleSubmit(formEvent);
     }
   };
 
-  const handleClearChat = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation();
-    if (window.confirm('Are you sure you want to clear the conversation? This cannot be undone.')) {
-      // Create a new array with the initial message
-      const newMessages = [{
-        role: 'assistant' as const,
-        content: "Hi! I'm ISA, your Inlaab Sales Assistant. How can I help you today?"
-      }];
-      
-      // Force a state update
-      setMessages([]); // First empty to force update
-      setInput('');
-      
-      // Use setTimeout to ensure state updates
-      setTimeout(() => {
-        setMessages(newMessages);
-        if (onMessagesChange) {
-          onMessagesChange(newMessages);
-        }
-      }, 0);
-    }
-  }, [onMessagesChange]);
+  const handleClearChat = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.stopPropagation();
+      if (
+        window.confirm(
+          'Are you sure you want to clear the conversation? This cannot be undone.'
+        )
+      ) {
+        // Create a new array with the initial message
+        const newMessages = [
+          {
+            role: 'assistant' as const,
+            content:
+              "Hi! I'm ISA, your Inlaab Sales Assistant. How can I help you today?",
+          },
+        ];
+
+        // Force a state update
+        setMessages([]); // First empty to force update
+        setInput('');
+
+        // Use setTimeout to ensure state updates
+        setTimeout(() => {
+          setMessages(newMessages);
+          if (onMessagesChange) {
+            onMessagesChange(newMessages);
+          }
+        }, 0);
+      }
+    },
+    [onMessagesChange]
+  );
 
   return (
     <div className="flex flex-col h-full bg-white overflow-hidden">
       {/* Header del chat */}
       <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-100">
         <div className="flex items-center space-x-3">
-          <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-inlaab-blue to-inlaab-orange p-0.5">
-            <div className="w-full h-full rounded-full overflow-hidden bg-white p-0.5">
-              <div className="relative w-8 h-8 rounded-full overflow-hidden">
-                <Image 
-                  src="/isa-logo.png" 
-                  alt="ISA Logo" 
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-inlaab-blue to-inlaab-orange p-[3px] shadow-lg">
+            <div className="w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center">
+              <div className="relative w-12 h-12 rounded-full overflow-hidden">
+                <Image
+                  src="/ISA_Avatar.jpg"
+                  alt="ISA Avatar"
                   fill
-                  sizes="32px"
+                  sizes="48px"
                   className="object-cover"
                   priority
                 />
@@ -340,14 +375,14 @@ const ChatBubbleComponent: React.FC<ChatBubbleProps> = ({
       </div>
 
       {/* Área de mensajes */}
-      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6 bg-gray-50/30">
+      <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-3 sm:py-4 space-y-4 sm:space-y-6 bg-gray-50/30">
         {messages.map((message, index) => (
           <div
             key={index}
             className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             <div
-              className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl relative group ${
+              className={`max-w-[85%] sm:max-w-xs lg:max-w-md px-3 sm:px-4 py-2 sm:py-3 rounded-2xl relative group ${
                 message.role === 'user'
                   ? 'bg-inlaab-cream text-inlaab-blue rounded-br-md border outline-none'
                   : 'bg-white text-gray-800 border border-gray-100 rounded-bl-md'
@@ -363,11 +398,11 @@ const ChatBubbleComponent: React.FC<ChatBubbleProps> = ({
                   />
                   <div className="flex justify-end mt-1 -mb-1 -mr-1">
                     <button
-                      onClick={(e) => {
+                      onClick={e => {
                         e.stopPropagation();
                         copyToClipboard(message.content);
                       }}
-                      className="p-1 rounded-full text-gray-400 hover:text-inlaab-orange hover:bg-gray-50 transition-colors duration-200 opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-inlaab-orange/30"
+                      className="p-1 rounded-full text-gray-400 hover:text-inlaab-orange hover:bg-gray-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-inlaab-orange/30"
                       aria-label="Copy to clipboard"
                       title="Copy to clipboard"
                     >
@@ -398,7 +433,7 @@ const ChatBubbleComponent: React.FC<ChatBubbleProps> = ({
         {loading && (
           <div className="flex justify-start">
             <div className="bg-white text-gray-800 px-4 py-3 rounded-2xl rounded-bl-md shadow-sm border border-gray-100">
-              <div className="flex space-x-1 items-center">
+                <div className="flex space-x-1.5 items-center">
                 <div className="w-2 h-2 bg-inlaab-blue rounded-full animate-bounce"></div>
                 <div
                   className="w-2 h-2 bg-inlaab-blue rounded-full animate-bounce"
@@ -417,7 +452,7 @@ const ChatBubbleComponent: React.FC<ChatBubbleProps> = ({
       </div>
 
       {/* Área de input */}
-      <div className="px-6 py-4 bg-white border-t border-gray-100">
+      <div className="px-4 sm:px-6 py-3 sm:py-4 bg-white border-t border-gray-100">
         <form onSubmit={handleSubmit} className="flex items-center gap-3">
           <div className="flex-1 flex items-center">
             <div className="w-full">
@@ -426,7 +461,7 @@ const ChatBubbleComponent: React.FC<ChatBubbleProps> = ({
                 onChange={handleInputChange}
                 onKeyPress={handleKeyPress}
                 placeholder="Type your message..."
-                className="w-full min-h-[44px] resize-none border-0 bg-gray-50 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-inlaab-blue/20 focus:bg-white hover:bg-gray-100/50 transition-all duration-200 placeholder-gray-400 text-gray-700 leading-tight flex items-center"
+                className="w-full min-h-[44px] resize-none border-0 bg-gray-50 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-inlaab-blue/20 focus:bg-white hover:bg-gray-100/50 transition-all duration-200 placeholder-gray-400 text-gray-700 text-sm sm:text-base leading-tight flex items-center"
                 rows={1}
                 disabled={loading}
                 style={{ cursor: 'text' }}

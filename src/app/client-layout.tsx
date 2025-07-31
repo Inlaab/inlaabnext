@@ -21,6 +21,7 @@ export default function ClientLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
@@ -35,7 +36,7 @@ export default function ClientLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
       </head>
-      <body className="font-sans antialiased bg-gray-50">
+      <body className={`font-sans antialiased bg-gray-50 ${isChatOpen ? 'overflow-hidden' : ''}`}>
         <main
           id="main-content"
           className="min-h-screen transition-all duration-500 ease-out lg:pr-0"
@@ -43,10 +44,10 @@ export default function ClientLayout({
           {children}
         </main>
 
-        {/* Botón flotante del chat - Fuera del aside para que siempre sea visible */}
+        {/* Botón flotante del chat - Posición superior en móviles, inferior en desktop */}
         <button
           id="chat-button"
-          className="fixed bottom-8 right-8 w-16 h-16 rounded-full bg-white/10 backdrop-blur-md text-white text-2xl flex items-center justify-center drop-shadow-xl shadow-2xl z-[2001] hover:bg-white/20 hover:drop-shadow-2xl transition-all duration-200"
+          className="fixed top-8 right-8 bottom-auto sm:top-auto sm:bottom-8 w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/10 backdrop-blur-md text-white text-2xl flex items-center justify-center drop-shadow-xl shadow-2xl z-[2001] hover:bg-white/20 hover:drop-shadow-2xl transition-all duration-200"
           aria-label="Abrir chat con ISA"
         >
           ✨
@@ -62,6 +63,7 @@ export default function ClientLayout({
             onMessagesChange={(newMessages) => {
               setMessages(newMessages);
             }}
+            onChatToggle={setIsChatOpen}
           />
         </aside>
 
