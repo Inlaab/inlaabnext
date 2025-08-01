@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { headers } from 'next/headers';
+import { ratelimit } from '../../../../lib/rate-limit';
 
 interface RequestBody {
   messages: Array<{
@@ -8,6 +10,29 @@ interface RequestBody {
 }
 
 export async function POST(request: NextRequest) {
+  // Aplicar rate limiting
+  const ip = headers().get('x-forwarded-for') || '127.0.0.1';
+  const { success, limit, reset, remaining } = await ratelimit.limit(ip);
+
+  if (!success) {
+    return new NextResponse(
+      JSON.stringify({ 
+        error: 'Demasiadas peticiones',
+        message: 'Has excedido el límite de 5 peticiones por minuto' 
+      }), 
+      {
+        status: 429,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-RateLimit-Limit': limit.toString(),
+          'X-RateLimit-Remaining': remaining.toString(),
+          'X-RateLimit-Reset': reset.toString(),
+          'Retry-After': '60'
+        }
+      }
+    );
+  }
+
   let body: RequestBody | null = null;
 
   try {
@@ -129,10 +154,19 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     const err = error as Error;
-    // Only log in development
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error in ask-isa API route:', err);
-    }
+    
+    // In production, you might want to use a proper logging service like Sentry, LogRocket, etc.
+    // For now, we'll use a simple error handling approach that satisfies ESLint
+    const handleError = (error: Error) => {
+      if (process.env.NODE_ENV === 'development') {
+        // eslint-disable-next-line no-console
+        console.error('Error in ask-isa API route:', error);
+      }
+      // In production, you would typically send the error to a monitoring service
+      // Example: Sentry.captureException(error);
+    };
+    
+    handleError(err);
     
     return NextResponse.json({ 
       error: 'Internal server error',
