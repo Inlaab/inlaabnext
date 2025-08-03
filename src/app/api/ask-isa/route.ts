@@ -49,8 +49,8 @@ export async function POST(request: NextRequest) {
     
     logger.log('Rate limiting para IP:', ip);
     
-    // Aplicar rate limiting - Asegurarse de que ip nunca sea undefined
-    const result = await ratelimit.limit(ip);
+    // Aplicar rate limiting - La implementación actual no necesita la IP
+    const result = await ratelimit.limit();
     logger.log('Resultado del rate limit:', result);
 
     // Configurar cabeceras de respuesta
