@@ -24,7 +24,7 @@ Sitio web corporativo de **INLAAB** (Innovación y Tecnología para tu Negocio),
 - 📊 **Analytics Ready** preparado para Google Analytics
 - 🌐 **Internacionalización** preparada para múltiples idiomas (actualmente en inglés)
 - 🛡️ **Seguridad Mejorada** con variables de entorno y código limpio
-- 🔧 **Herramientas de Desarrollo** con ESLint, Prettier y VS Code optimizado
+- 🔧 **Herramientas de Desarrollo** con ESLint, Prettier y Windsurf optimizado
 
 ## 🏗️ Arquitectura del Proyecto
 
@@ -95,29 +95,86 @@ inlaab-website/
 
 ### Características
 
-- **IA Conversacional**: Powered by CodeGPT API
+- **IA Conversacional**: Integrado con CodeGPT API
+- **Seguridad Mejorada**: Validación de entradas y manejo de errores
 - **Contexto Empresarial**: Entrenado con información específica de INLAAB
 - **Interfaz Intuitiva**: Chat bubble flotante con animaciones
+- **Diseño Responsivo**: Navegación optimizada para móviles y desktop
+- **Experiencia de Usuario Mejorada**: Posicionamiento preciso de elementos de interfaz
+- **Identidad de Marca**: Favicon personalizado actualizado
 - **Responsive**: Adaptado para móviles y desktop
 - **Historial**: Mantiene contexto de la conversación
 
 ### Configuración API
 
-```typescript
-// src/app/api/ask-isa/route.ts
-// Configuración segura usando variables de entorno
-const CODEGPT_API_URL = process.env.CODEGPT_API_URL
-const ORG_ID = process.env.CODEGPT_ORG_ID
-const AGENT_ID = process.env.CODEGPT_AGENT_ID
-const API_KEY = process.env.CODEGPT_API_KEY
+#### Variables de Entorno Requeridas
+
+```bash
+# .env.local
+CODEGPT_API_URL=tu_url_de_codegpt
+CODEGPT_ORG_ID=tu_org_id
+CODEGPT_AGENT_ID=tu_agent_id
+CODEGPT_API_KEY=tu_api_key
+UPSTASH_REDIS_REST_URL=tu_url_upstash_redis
+UPSTASH_REDIS_REST_TOKEN=tu_token_upstash_redis
 ```
 
-### Seguridad
+#### Configuración de Rate Limiting
 
-- **Variables de entorno**: Todas las credenciales API están externalizadas
-- **Validación de entorno**: Verificación automática de variables requeridas
-- **Código limpio**: Sin console.log en producción
-- **Manejo de errores**: Gestión segura de fallos de API
+```typescript
+// lib/rate-limit.ts
+import { Ratelimit } from '@upstash/ratelimit';
+import { Redis } from '@upstash/redis';
+
+export const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL as string,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN as string,
+});
+
+export const ratelimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(5, '1 m'), // 5 peticiones por minuto
+  analytics: true,
+  prefix: 'rate-limit',
+  timeout: 10000, // 10 segundos de timeout
+});
+```
+
+### Seguridad y Protección
+
+- **Rate Limiting**: 5 peticiones por minuto por IP
+- **Variables de entorno**: Credenciales externalizadas
+- **Validación de entorno**: Verificación automática
+- **Código limpio**: Logs solo en desarrollo
+- **Manejo de errores**: Seguro y descriptivo
+- **Protección DDoS**: Con Upstash Redis
+- **CORS**: Configuración segura
+- **Cabeceras de seguridad**: Configuradas en middleware
+- **Tipado estricto**: TypeScript con configuraciones estrictas
+
+## 🚀 Despliegue en Producción
+
+### Requisitos Previos
+
+- Cuenta en [Vercel](https://vercel.com)
+- Base de datos Redis en [Upstash](https://upstash.com/)
+- Cuenta en [CodeGPT](https://codegpt.co/)
+
+### Configuración en Vercel
+
+1. **Variables de Entorno**:
+   - Configura todas las variables de entorno en el dashboard de Vercel
+   - Asegúrate de marcar las variables sensibles como secretas
+
+2. **Configuración de Build**:
+   ```bash
+   # Comandos de build
+   npm run build
+   ```
+
+3. **Configuración de Dominio**:
+   - Configura tu dominio personalizado en la sección de dominios de Vercel
+   - Habilita HTTPS automático
 
 ## 🛠️ Instalación y Desarrollo
 
@@ -173,11 +230,17 @@ pnpm install
 Crea un archivo `.env.local` en la raíz del proyecto:
 
 ```bash
-# .env.local
+# Credenciales de CodeGPT
 CODEGPT_API_URL=https://api.codegpt.co
 CODEGPT_ORG_ID=tu_org_id
 CODEGPT_AGENT_ID=tu_agent_id
 CODEGPT_API_KEY=tu_api_key
+
+# Configuración de Upstash Redis
+UPSTASH_REDIS_REST_URL=tu_url_upstash_redis
+UPSTASH_REDIS_REST_TOKEN=tu_token_upstash_redis
+
+# Configuración de la aplicación
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX  # Google Analytics (opcional)
 NODE_ENV=development
@@ -226,6 +289,7 @@ Se han implementado las siguientes mejoras basadas en un audit completo del cód
 - **Externalización de credenciales**: API keys movidas a variables de entorno
 - **Eliminación de logs**: Removidos console.log de producción
 - **Validación de entorno**: Verificación automática de variables requeridas
+- **Nota**: El rate limiting ha sido desactivado temporalmente para facilitar el desarrollo. Se implementará una solución de seguridad en producción.
 
 #### 🔧 Calidad de Código
 - **TypeScript estricto**: Configuración mejorada con reglas adicionales

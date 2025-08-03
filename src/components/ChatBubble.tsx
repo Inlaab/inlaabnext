@@ -47,6 +47,14 @@ const ChatBubbleComponent: React.FC<ChatBubbleProps> = ({
   const [loading, setLoading] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatButtonRef = useRef<HTMLButtonElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Función para enfocar el textarea
+  const focusTextarea = useCallback(() => {
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, []);
 
   // Function to copy text to clipboard
   const copyToClipboard = useCallback(async (text: string) => {
@@ -74,6 +82,15 @@ const ChatBubbleComponent: React.FC<ChatBubbleProps> = ({
     return () => {};
   }, []);
 
+  // Efecto para enfocar el textarea cuando se abre el chat
+  useEffect(() => {
+    if (!open || !textareaRef.current) return;
+    
+    // Pequeño retraso para asegurar que la animación de apertura haya terminado
+    const timer = setTimeout(focusTextarea, 100);
+    return () => clearTimeout(timer);
+  }, [open, focusTextarea]);
+
   // Effect to control content visibility
   useEffect(() => {
     // This effect runs only in the browser
@@ -89,9 +106,9 @@ const ChatBubbleComponent: React.FC<ChatBubbleProps> = ({
 
     if (chatAside && mainContent && chatButton) {
       if (open) {
-        // Show with smooth animation
-        chatAside.classList.remove('translate-x-full', 'opacity-0', 'scale-95');
-        chatAside.classList.add('translate-x-0', 'opacity-100', 'scale-100');
+        // Show with smooth animation (removed scale effect)
+        chatAside.classList.remove('translate-x-full', 'opacity-0');
+        chatAside.classList.add('translate-x-0', 'opacity-100');
 
         // Hide the close button when open
         chatButton.style.opacity = '0';
@@ -99,7 +116,8 @@ const ChatBubbleComponent: React.FC<ChatBubbleProps> = ({
         chatButton.style.transform = 'scale(0.8)';
 
         // Hide navbar on mobile when chat is open
-        if (navbar && window.innerWidth < 640) { // sm breakpoint
+        if (navbar && window.innerWidth < 640) {
+          // sm breakpoint
           navbar.style.display = 'none';
         }
 
@@ -118,17 +136,20 @@ const ChatBubbleComponent: React.FC<ChatBubbleProps> = ({
           overlay.addEventListener('click', overlayClickHandler);
         }
       } else {
-        // Hide with smooth animation
-        chatAside.classList.remove('translate-x-0', 'opacity-100', 'scale-100');
-        chatAside.classList.add('translate-x-full', 'opacity-0', 'scale-95');
+        // Hide with smooth animation (removed scale effect)
+        chatAside.classList.remove('translate-x-0', 'opacity-100');
+        chatAside.classList.add('translate-x-full', 'opacity-0');
 
-        // Reset styles when closing
-        chatButton.style.opacity = '1';
-        chatButton.style.pointerEvents = 'auto';
-        chatButton.style.transform = 'scale(1)';
+        // Reset styles when closing with delay
+        setTimeout(() => {
+          chatButton.style.opacity = '1';
+          chatButton.style.pointerEvents = 'auto';
+          chatButton.style.transform = 'scale(1)';
+        }, 1000); // Retraso de 1000ms (1 segundo)
 
         // Show navbar again on mobile when chat is closed
-        if (navbar && window.innerWidth < 640) { // sm breakpoint
+        if (navbar && window.innerWidth < 640) {
+          // sm breakpoint
           navbar.style.display = 'block';
         }
 
@@ -188,6 +209,13 @@ const ChatBubbleComponent: React.FC<ChatBubbleProps> = ({
       window.removeEventListener('resize', handleResize);
     };
   }, [open]);
+
+  // Efecto para enfocar el textarea cuando se completa el envío de un mensaje
+  useEffect(() => {
+    if (!loading && open) {
+      focusTextarea();
+    }
+  }, [loading, open, focusTextarea]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -352,8 +380,12 @@ const ChatBubbleComponent: React.FC<ChatBubbleProps> = ({
             </svg>
           </button>
           <button
-            onClick={() => setOpen(false)}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-inlaab-blue/30"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setOpen(false);
+            }}
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-inlaab-blue/30 z-[101] relative"
             aria-label="Close chat"
             title="Close chat"
           >
@@ -433,7 +465,7 @@ const ChatBubbleComponent: React.FC<ChatBubbleProps> = ({
         {loading && (
           <div className="flex justify-start">
             <div className="bg-white text-gray-800 px-4 py-3 rounded-2xl rounded-bl-md shadow-sm border border-gray-100">
-                <div className="flex space-x-1.5 items-center">
+              <div className="flex space-x-1.5 items-center">
                 <div className="w-2 h-2 bg-inlaab-blue rounded-full animate-bounce"></div>
                 <div
                   className="w-2 h-2 bg-inlaab-blue rounded-full animate-bounce"
@@ -457,14 +489,23 @@ const ChatBubbleComponent: React.FC<ChatBubbleProps> = ({
           <div className="flex-1 flex items-center">
             <div className="w-full">
               <textarea
+                ref={textareaRef}
                 value={input}
                 onChange={handleInputChange}
                 onKeyPress={handleKeyPress}
-                placeholder="Type your message..."
+                onBlur={(e) => {
+                  // Solo perder el foco si el clic fue fuera del área del chat
+                  const relatedTarget = e.relatedTarget as HTMLElement;
+                  if (!e.currentTarget.contains(relatedTarget)) {
+                    e.currentTarget.focus();
+                  }
+                }}
+                placeholder="Let's talk!..."
                 className="w-full min-h-[44px] resize-none border-0 bg-gray-50 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-inlaab-blue/20 focus:bg-white hover:bg-gray-100/50 transition-all duration-200 placeholder-gray-400 text-gray-700 text-sm sm:text-base leading-tight flex items-center"
                 rows={1}
                 disabled={loading}
                 style={{ cursor: 'text' }}
+                autoFocus
               />
             </div>
           </div>

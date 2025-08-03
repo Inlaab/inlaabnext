@@ -1,14 +1,13 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import './globals.css';
-import dynamic from 'next/dynamic';
 
 // Importación dinámica del componente ChatBubble con SSR deshabilitado
-const ChatBubbleComponent = dynamic(
-  () => import('@/components/ChatBubble'),
-  { ssr: false }
-);
+const ChatBubbleComponent = dynamic(() => import('@/components/ChatBubble'), {
+  ssr: false,
+});
 
 // Definir el tipo de mensaje
 type Message = {
@@ -25,8 +24,9 @@ export default function ClientLayout({
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: "Hi! I'm ISA, your Inlaab Sales Assistant. How can I help you today?"
-    }
+      content:
+        "Hi! I'm ISA, your Inlaab Sales Assistant. How can I help you today?",
+    },
   ]);
 
   return (
@@ -34,21 +34,27 @@ export default function ClientLayout({
       <head>
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="icon" type="image/svg+xml" href="/Favicon_INLAAB_Light.svg" />
       </head>
-      <body className={`font-sans antialiased bg-gray-50 ${isChatOpen ? 'overflow-hidden' : ''}`}>
+      <body
+        className={`font-sans antialiased bg-gray-50 ${isChatOpen ? 'overflow-hidden' : ''}`}
+      >
         <main
           id="main-content"
-          className="min-h-screen transition-all duration-500 ease-out lg:pr-0"
+          className={`min-h-screen transition-all duration-500 ease-out ${isChatOpen ? 'lg:pr-96' : 'lg:pr-0'}`}
         >
           {children}
         </main>
 
-        {/* Botón flotante del chat - Posición superior en móviles, inferior en desktop */}
+        {/* Botón flotante del chat - Centrado a 51px del borde superior */}
         <button
           id="chat-button"
-          className="fixed top-8 right-8 bottom-auto sm:top-auto sm:bottom-8 w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/10 backdrop-blur-md text-white text-2xl flex items-center justify-center drop-shadow-xl shadow-2xl z-[2001] hover:bg-white/20 hover:drop-shadow-2xl transition-all duration-200"
+          className="fixed right-8 w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/10 backdrop-blur-md text-white text-2xl flex items-center justify-center drop-shadow-xl shadow-2xl z-[2001] hover:bg-white/20 hover:drop-shadow-2xl transition-all duration-200"
           aria-label="Abrir chat con ISA"
+          style={{
+            top: '53px', // Posición exacta del centro del botón
+            marginTop: '-28px', // Mitad de la altura del botón (56px/2) para centrarlo en el punto especificado
+          }}
         >
           ✨
         </button>
@@ -56,11 +62,12 @@ export default function ClientLayout({
         {/* Chat Aside */}
         <aside
           id="chat-aside"
-          className="fixed top-0 right-0 h-full w-96 bg-white shadow-2xl transform translate-x-full transition-all duration-500 ease-out opacity-0 scale-95 z-40"
+          className="fixed top-0 right-0 h-screen w-full sm:w-96 bg-white shadow-2xl transform translate-x-full transition-all duration-500 ease-out opacity-0 z-[100] flex flex-col"
+          style={{ margin: 0, padding: 0 }}
         >
-          <ChatBubbleComponent 
+          <ChatBubbleComponent
             initialMessages={messages}
-            onMessagesChange={(newMessages) => {
+            onMessagesChange={newMessages => {
               setMessages(newMessages);
             }}
             onChatToggle={setIsChatOpen}

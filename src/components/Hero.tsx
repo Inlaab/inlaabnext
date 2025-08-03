@@ -5,28 +5,55 @@ import Image from 'next/image';
 
 const Hero = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+
+  // Efecto para sincronizar el estado del chat
+  useEffect(() => {
+    const handleChatToggle = () => {
+      const chatAside = document.getElementById('chat-aside');
+      if (chatAside) {
+        const isOpen = !chatAside.classList.contains('translate-x-full');
+        setIsChatOpen(isOpen);
+      }
+    };
+
+    // Observar cambios en el aside del chat
+    const chatObserver = new MutationObserver(handleChatToggle);
+    const chatAside = document.getElementById('chat-aside');
+    if (chatAside) {
+      chatObserver.observe(chatAside, {
+        attributes: true,
+        attributeFilter: ['class'],
+      });
+    }
+
+    // Verificar estado inicial
+    handleChatToggle();
+
+    return () => {
+      chatObserver.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Función para actualizar estilos del navbar basado en el estado del chat
+    // Función para actualizar estilos del navbar basado en el scroll
     function updateNavbarStyles() {
       const navbar = document.getElementById('hero-navbar');
       const navbarContainer = document.getElementById('navbar-container');
-      const chatAside = document.getElementById('chat-aside');
       const scrollY = window.scrollY;
 
       if (!navbar || !navbarContainer) return;
 
-      const isChatOpen =
-        chatAside && !chatAside.classList.contains('translate-x-full');
-
       // Ajustar el padding derecho cuando el chat está abierto
+      // Usando clases de Tailwind para la transición
       if (isChatOpen) {
-        const chatWidth = chatAside.offsetWidth;
-        navbar.style.paddingRight = `${chatWidth}px`;
+        navbar.classList.add('pr-96');
+        navbar.classList.remove('pr-0');
       } else {
-        navbar.style.paddingRight = '0';
+        navbar.classList.remove('pr-96');
+        navbar.classList.add('pr-0');
       }
 
       // Mantener la lógica existente de scroll
@@ -92,7 +119,7 @@ const Hero = () => {
       window.removeEventListener('resize', updateNavbarStyles);
       chatObserver.disconnect();
     };
-  }, []);
+  }, [isChatOpen]); // Agregado isChatOpen como dependencia
 
   return (
     <section className="relative min-h-screen overflow-hidden">
@@ -147,7 +174,7 @@ const Hero = () => {
       {/* Navbar con efecto glassmorphism (inicialmente en la parte inferior) */}
       <nav
         id="hero-navbar"
-        className="fixed bottom-8 left-0 right-0 z-50 opacity-100 transition-all duration-300 ease-in-out"
+        className="fixed bottom-8 left-0 right-0 z-50 opacity-100 transition-all duration-500 ease-out pr-0"
       >
         <div className="w-full px-4">
           <div
@@ -201,26 +228,11 @@ const Hero = () => {
               </div>
 
               {/* Mobile Navigation */}
-              <div className="md:hidden flex items-center justify-between">
-                {/* Logo */}
-                <div className="flex items-center">
-                  <Image
-                    src="/Logo InlaabNav.svg"
-                    alt="INLAAB Logo"
-                    width={48}
-                    height={48}
-                    className="h-12 w-auto brightness-0 invert sepia-[.15] saturate-[.8] hue-rotate-[25deg]"
-                    onError={e => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = '/Logo INLAAB.png';
-                    }}
-                  />
-                </div>
-
-                {/* Hamburger Menu Button */}
+              <div className="md:hidden flex items-center relative">
+                {/* Hamburger Menu Button - Moved to left */}
                 <button
                   onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                  className="p-2 rounded-lg hover:bg-white/10 transition-colors duration-200"
+                  className="p-2 rounded-lg hover:bg-white/10 transition-colors duration-200 z-10"
                   aria-label="Toggle mobile menu"
                 >
                   <div className="w-6 h-6 flex flex-col justify-center items-center">
@@ -235,6 +247,21 @@ const Hero = () => {
                     ></span>
                   </div>
                 </button>
+
+                {/* Logo - Centered */}
+                <div className="absolute left-1/2 transform -translate-x-1/2">
+                  <Image
+                    src="/Logo InlaabNav.svg"
+                    alt="INLAAB Logo"
+                    width={48}
+                    height={48}
+                    className="h-12 w-auto brightness-0 invert sepia-[.15] saturate-[.8] hue-rotate-[25deg]"
+                    onError={e => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = '/Logo INLAAB.png';
+                    }}
+                  />
+                </div>
               </div>
 
               {/* Mobile Menu Dropdown */}
