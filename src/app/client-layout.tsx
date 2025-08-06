@@ -3,6 +3,12 @@
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import './globals.css';
+import SourceCodeProtection from '@/components/SourceCodeProtection';
+
+// Importación dinámica del componente Footer con SSR deshabilitado
+const Footer = dynamic(() => import('@/components/Footer'), {
+  ssr: false,
+});
 
 // Importación dinámica del componente ChatBubble con SSR deshabilitado
 const ChatBubbleComponent = dynamic(() => import('@/components/ChatBubble'), {
@@ -31,6 +37,7 @@ export default function ClientLayout({
 
   return (
     <html lang="es">
+      <SourceCodeProtection />
       <head>
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -43,7 +50,12 @@ export default function ClientLayout({
           id="main-content"
           className={`min-h-screen transition-all duration-500 ease-out ${isChatOpen ? 'lg:pr-96' : 'lg:pr-0'}`}
         >
-          {children}
+          <div className="flex flex-col min-h-screen">
+            <div className="flex-grow">
+              {children}
+            </div>
+            <Footer />
+          </div>
         </main>
 
         {/* Botón flotante del chat - Centrado a 51px del borde superior */}

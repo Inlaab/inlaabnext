@@ -69,14 +69,14 @@ const SimplifyingComplex = () => {
             </h3>
 
             {/* Párrafos de contenido */}
-            <p className="text-base leading-relaxed font-light">
+            <p className="text-base leading-relaxed font-light text-justify">
               Often, the world of development can seem complex due to its
               dynamics and multiple languages. That&apos;s why we decided to
               stick to just one:{' '}
               <span className="font-medium text-red-100">Yours</span>.
             </p>
 
-            <p className="text-base leading-relaxed font-light">
+            <p className="text-base leading-relaxed font-light text-justify">
               We believe that technology should be accessible to everyone
               because it impacts our own dynamics, enhances them, and elevates
               knowledge to a higher level. That&apos;s why we speak plainly,
@@ -84,7 +84,7 @@ const SimplifyingComplex = () => {
               language.
             </p>
 
-            <p className="text-base leading-relaxed font-light">
+            <p className="text-base leading-relaxed font-light text-justify">
               As for the rest, we take care of it because we understand the
               importance of ideas as well as the power of processes that
               transform lives.

@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 
-const Contact = () => {
+const Footer = () => {
   useEffect(() => {
     // Add intersection observer for scroll animations
     const observerOptions = {
@@ -33,7 +33,7 @@ const Contact = () => {
   }, []);
 
   return (
-    <section className="py-20 bg-inlaab-blue relative overflow-hidden">
+    <footer className="py-20 bg-inlaab-blue relative overflow-hidden">
       {/* Fondo con patrón de líneas diagonales sutiles */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-0 left-0 w-full h-full">
@@ -112,8 +112,10 @@ const Contact = () => {
                 With Us
               </h3>
             </div>
+          </div>
 
-            {/* Información de la empresa */}
+          {/* Columna derecha - Dirección */}
+          <div className="lg:col-span-1 text-center animate-slide-up" style={{ animationDelay: '0.4s' }}>
             <div className="space-y-2 text-inlaab-cream">
               {/* Pin de ubicación */}
               <div className="flex justify-center mb-4">
@@ -136,51 +138,8 @@ const Contact = () => {
           </div>
         </div>
       </div>
-
-      {/* CSS Styles */}
-      <style jsx>{`
-        /* Animaciones */
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-
-        @keyframes slideUp {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .animate-fade-in {
-          animation: fadeIn 0.8s ease-out forwards;
-        }
-
-        .animate-slide-up {
-          animation: slideUp 0.8s ease-out forwards;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 1024px) {
-          .grid {
-            text-align: center;
-          }
-
-          .text-right {
-            text-align: center;
-          }
-        }
-      `}</style>
-    </section>
+    </footer>
   );
 };
 
-export default Contact;
+export default Footer;

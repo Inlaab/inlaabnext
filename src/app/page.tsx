@@ -4,18 +4,24 @@ import OurServices from '@/components/OurServices';
 import BeingFriends from '@/components/BeingFriends';
 import SimplifyingComplex from '@/components/SimplifyingComplex';
 import OurOffer from '@/components/OurOffer';
-import Contact from '@/components/Contact';
 
 export default function Home() {
   return (
     <main>
       <Hero />
-      <Services />
-      <OurServices />
-      <BeingFriends />
+      <section id="about">
+        <Services />
+      </section>
+      <section id="services">
+        <OurServices />
+      </section>
+      <section id="values">
+        <BeingFriends />
+      </section>
       <SimplifyingComplex />
-      <OurOffer />
-      <Contact />
+      <section id="contact">
+        <OurOffer />
+      </section>
     </main>
   );
 }

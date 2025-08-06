@@ -67,7 +67,7 @@ const OurOffer = () => {
             </h3>
 
             {/* Párrafos de contenido */}
-            <p className="text-base leading-relaxed font-light">
+            <p className="text-base leading-relaxed font-light text-justify">
               At <span className="font-medium text-inlaab-red">Inlaab</span>,
               innovation is the cornerstone that drives us to tackle complex
               challenges and open new opportunities. Through close collaboration
@@ -75,7 +75,7 @@ const OurOffer = () => {
               deliver the best of our team in every project.
             </p>
 
-            <p className="text-base leading-relaxed font-light">
+            <p className="text-base leading-relaxed font-light text-justify">
               Maintaining integrity as our guiding principle, we operate with
               transparency and trust. Our agility ensures adaptability in a
               dynamic business environment, keeping our clients one step ahead.
