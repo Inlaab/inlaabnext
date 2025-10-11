@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const Footer = () => {
   useEffect(() => {
@@ -31,6 +31,25 @@ const Footer = () => {
       observer.disconnect();
     };
   }, []);
+
+  const [isCalendlyOpen, setIsCalendlyOpen] = useState(false);
+
+  // Lock body scroll and handle Esc to close when modal is open
+  useEffect(() => {
+    if (isCalendlyOpen) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      const onKey = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') setIsCalendlyOpen(false);
+      };
+      window.addEventListener('keydown', onKey);
+      return () => {
+        document.body.style.overflow = prev;
+        window.removeEventListener('keydown', onKey);
+      };
+    }
+    return;
+  }, [isCalendlyOpen]);
 
   return (
     <footer className="py-20 bg-inlaab-blue relative overflow-hidden">
@@ -98,24 +117,38 @@ const Footer = () => {
                 >
                   <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
                 </svg>
-                <span className="text-inlaab-cream text-sm font-light tracking-wide">
+                <a
+                  href="mailto:sales@inlaab.com"
+                  className="text-inlaab-cream text-sm font-light tracking-wide hover:underline"
+                  aria-label="Email sales at inlaab dot com"
+                >
                   Talk to an Expert
-                </span>
+                </a>
               </div>
             </div>
 
             {/* Schedule Time With Us */}
-            <div className="border-l border-r border-inlaab-cream/30 px-8 py-6 mb-8">
-              <h3 className="text-inlaab-cream text-lg font-medium mb-2">
+            <button
+              type="button"
+              onClick={() => setIsCalendlyOpen(true)}
+              className="border-l border-r border-inlaab-cream/30 px-8 py-6 mb-8 inline-block text-left"
+              aria-haspopup="dialog"
+              aria-expanded={isCalendlyOpen}
+              aria-controls="calendly-modal"
+            >
+              <h3 className="text-inlaab-cream text-lg font-medium mb-2 text-center">
                 Schedule Time
                 <br />
                 With Us
               </h3>
-            </div>
+            </button>
           </div>
 
           {/* Columna derecha - Dirección */}
-          <div className="lg:col-span-1 text-center animate-slide-up" style={{ animationDelay: '0.4s' }}>
+          <div
+            className="lg:col-span-1 text-center animate-slide-up"
+            style={{ animationDelay: '0.4s' }}
+          >
             <div className="space-y-2 text-inlaab-cream">
               {/* Pin de ubicación */}
               <div className="flex justify-center mb-4">
@@ -138,6 +171,37 @@ const Footer = () => {
           </div>
         </div>
       </div>
+      {/* Calendly modal */}
+      {isCalendlyOpen && (
+        <div
+          id="calendly-modal"
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+        >
+          <div
+            className="absolute inset-0 bg-black/60"
+            onClick={() => setIsCalendlyOpen(false)}
+          />
+
+          <div className="relative w-full max-w-3xl h-[80vh] bg-white rounded shadow-lg overflow-hidden">
+            <button
+              aria-label="Close calendly dialog"
+              className="absolute top-3 right-3 z-10 bg-inlaab-blue text-inlaab-cream rounded-full w-8 h-8 flex items-center justify-center"
+              onClick={() => setIsCalendlyOpen(false)}
+            >
+              ×
+            </button>
+
+            <iframe
+              title="Schedule with Inlaab"
+              src="https://calendly.com/inlaab/30min?embed_domain=localhost&embed_type=Inline"
+              className="w-full h-full border-0"
+              sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+            />
+          </div>
+        </div>
+      )}
     </footer>
   );
 };
