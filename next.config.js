@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Configuración de Imágenes (Tus configuraciones originales, más los hostnames externos)
+  // Configuración de Imágenes (Tu configuración original, más los hostnames externos)
   images: {
     remotePatterns: [
       {
@@ -11,7 +11,7 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'localhost',
       },
-      // Hosts de Flutterflow: Añadidos para prevenir errores de optimización
+      // Hosts de Flutterflow: Necesarios para prevenir errores de optimización de imágenes.
       {
         protocol: 'https',
         hostname: 'cohe-inventories-nrk.flutterflow.app', 
@@ -33,16 +33,21 @@ const nextConfig = {
   async rewrites() {
     return [
       
-      // 1. REGLAS ESPECÍFICAS DE INTERCEPTACIÓN (La clave para arreglar el 404)
-      // Estas reglas interceptan los archivos estáticos que FlutterFlow pide desde la raíz (/)
-      // y los reescribe al servidor de origen de la aplicación /nrk.
+      // 1. REGLAS DE INTERCEPTACIÓN GLOBAL (Solución al error 404 en la consola)
+      // Intercepta recursos que las apps de FlutterFlow buscan desde la raíz (/)
       {
+        // main.dart.js y manifest.json son la clave. Apuntamos a la app de /nrk, asumiendo que el recurso es igual.
         source: '/main.dart.js', 
         destination: 'https://cohe-inventories-nrk.flutterflow.app/main.dart.js',
       },
       {
         source: '/manifest.json', 
         destination: 'https://cohe-inventories-nrk.flutterflow.app/manifest.json',
+      },
+      {
+        // Intercepta iconos y otros recursos dentro de /icons/
+        source: '/icons/:path*', 
+        destination: 'https://cohe-inventories-nrk.flutterflow.app/icons/:path*',
       },
       
       // 2. REGLAS DE ENMASCARAMIENTO PARA /nrk
@@ -58,23 +63,21 @@ const nextConfig = {
       },
       
       // 3. REGLAS DE ENMASCARAMIENTO PARA /cohe
-      // Asumimos que /cohe utiliza los MISMOS archivos estáticos principales.
       {
+        // Enmascara la URL base
         source: '/cohe', 
         destination: 'https://cohe-manager.flutterflow.app/',
       },
       {
+        // Enmascara todas las sub-rutas de /cohe
         source: '/cohe/:path*', 
         destination: 'https://cohe-manager.flutterflow.app/:path*',
       },
       
-      
-      // NOTA: Si al probar /cohe arroja 404 para archivos estáticos con nombres diferentes, 
-      // debes añadir reglas de interceptación adicionales para esos archivos aquí.
-      
     ];
   },
   
+  // No necesitamos redirecciones permanentes (301) ya que estamos usando enmascaramiento.
   async redirects() {
     return []; 
   },
