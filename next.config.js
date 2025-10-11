@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Configuración de Imágenes (Mantenemos tu configuración original)
+  // Configuración de Imágenes (Tu configuración original, más los hostnames externos)
   images: {
     remotePatterns: [
       {
@@ -11,7 +11,7 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'localhost',
       },
-      // OPCIONAL pero RECOMENDADO: Añadir los hostnames de Flutterflow para evitar problemas de optimización de imágenes.
+      // Hosts de Flutterflow: Añadidos para prevenir errores de optimización de imágenes si Flutterflow las usa
       {
         protocol: 'https',
         hostname: 'cohe-inventories-nrk.flutterflow.app', 
@@ -23,43 +23,43 @@ const nextConfig = {
     ],
   },
   
-  // Configuración para Vercel (Mantenemos tu configuración original)
+  // Configuración de Vercel
   output: 'standalone',
 
   // =================================================================
-  // === REGLAS DE REESCRITURA (REWRITES) ===
+  // === REGLAS DE REESCRITURA (REWRITES) ROBUSTAS PARA PROXY INVERSO ===
   // =================================================================
   
-  // Usamos Rewrites para que el contenido externo (FlutterFlow) cargue BAJO tu dominio (inlaab.com)
   async rewrites() {
     return [
-      // 1. Reglas para /nrk y sus sub-rutas
+      // 1. Reglas para /nrk
       {
+        // Petición a la URL base (inlaab.com/nrk)
         source: '/nrk', 
-        destination: 'https://cohe-inventories-nrk.flutterflow.app',
+        destination: 'https://cohe-inventories-nrk.flutterflow.app/', // Apunta a la raíz del destino
       },
       {
-        // El comodín :path* asegura que /nrk/login o /nrk/dashboard también funcione
+        // Petición a cualquier sub-ruta (inlaab.com/nrk/login, inlaab.com/nrk/main.dart.js, etc.)
         source: '/nrk/:path*', 
         destination: 'https://cohe-inventories-nrk.flutterflow.app/:path*',
       },
       
-      // 2. Reglas para /cohe y sus sub-rutas
+      // 2. Reglas para /cohe
       {
+        // Petición a la URL base (inlaab.com/cohe)
         source: '/cohe', 
-        destination: 'https://cohe-manager.flutterflow.app',
+        destination: 'https://cohe-manager.flutterflow.app/', // Apunta a la raíz del destino
       },
       {
-        // El comodín :path* para sub-rutas de /cohe
+        // Petición a cualquier sub-ruta (inlaab.com/cohe/recursos, etc.)
         source: '/cohe/:path*', 
         destination: 'https://cohe-manager.flutterflow.app/:path*',
       },
       
-      // Puedes añadir más rutas aquí si fuera necesario
     ];
   },
   
-  // Reglas de Redirección (redirects) si las necesitaras en el futuro
+  // Reglas de Redirección (las dejamos vacías por ahora)
   async redirects() {
     return []; 
   },
