@@ -164,9 +164,7 @@ const Footer = () => {
               <p className="font-semibold text-base tracking-wide">
                 INLAAB LLC
               </p>
-              <p className="text-sm font-light">8335 NE 2ND AVE</p>
-              <p className="text-sm font-light">STE 349-38</p>
-              <p className="text-sm font-light">MIAMI, FL, US 33138</p>
+              <p className="text-sm font-light">MIAMI, FL, US</p>
             </div>
           </div>
         </div>

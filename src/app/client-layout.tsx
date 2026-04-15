@@ -1,9 +1,8 @@
 'use client';
 
+import SourceCodeProtection from '@/components/SourceCodeProtection';
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
-import './globals.css';
-import SourceCodeProtection from '@/components/SourceCodeProtection';
 
 // Importación dinámica del componente Footer con SSR deshabilitado
 const Footer = dynamic(() => import('@/components/Footer'), {
@@ -37,23 +36,25 @@ export default function ClientLayout({
 
   return (
     <html lang="es">
-      <SourceCodeProtection />
       <head>
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link rel="icon" type="image/svg+xml" href="/Favicon_INLAAB_Light.svg" />
+        <link
+          rel="icon"
+          type="image/svg+xml"
+          href="/Favicon_INLAAB_Light.svg"
+        />
       </head>
       <body
         className={`font-sans antialiased bg-gray-50 ${isChatOpen ? 'overflow-hidden' : ''}`}
       >
+        <SourceCodeProtection />
         <main
           id="main-content"
           className={`min-h-screen transition-all duration-500 ease-out ${isChatOpen ? 'lg:pr-96' : 'lg:pr-0'}`}
         >
           <div className="flex flex-col min-h-screen">
-            <div className="flex-grow">
-              {children}
-            </div>
+            <div className="flex-grow">{children}</div>
             <Footer />
           </div>
         </main>

@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 // Función para manejar CORS
 function getCorsHeaders() {
@@ -14,16 +14,16 @@ function getCorsHeaders() {
 export async function middleware(request: NextRequest) {
   // Manejar preflight OPTIONS
   if (request.method === 'OPTIONS') {
-    return new NextResponse(null, { 
+    return new NextResponse(null, {
       status: 204,
-      headers: getCorsHeaders()
+      headers: getCorsHeaders(),
     });
   }
 
   // Aplicar CORS a todas las respuestas
   const response = NextResponse.next();
   const corsHeaders = getCorsHeaders();
-  
+
   // Agregar cabeceras CORS
   corsHeaders.forEach((value, key) => {
     response.headers.set(key, value);
@@ -34,5 +34,4 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: ['/api/:path*'],
-  runtime: 'edge',
 };

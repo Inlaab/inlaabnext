@@ -37,8 +37,9 @@ const ChatBubbleComponent: React.FC<ChatBubbleProps> = ({
   onMessagesChange,
   onChatToggle,
 }) => {
-  function renderMarkdown(text: string) {
-    return marked.parse(text, { breaks: true });
+  function renderMarkdown(text: string): string {
+    const result = marked.parse(text, { breaks: true, async: false });
+    return result as string;
   }
 
   const [open, setOpen] = useState(false);
@@ -85,7 +86,7 @@ const ChatBubbleComponent: React.FC<ChatBubbleProps> = ({
   // Efecto para enfocar el textarea cuando se abre el chat
   useEffect(() => {
     if (!open || !textareaRef.current) return;
-    
+
     // Pequeño retraso para asegurar que la animación de apertura haya terminado
     const timer = setTimeout(focusTextarea, 100);
     return () => clearTimeout(timer);
@@ -380,7 +381,7 @@ const ChatBubbleComponent: React.FC<ChatBubbleProps> = ({
             </svg>
           </button>
           <button
-            onClick={(e) => {
+            onClick={e => {
               e.preventDefault();
               e.stopPropagation();
               setOpen(false);
@@ -492,8 +493,8 @@ const ChatBubbleComponent: React.FC<ChatBubbleProps> = ({
                 ref={textareaRef}
                 value={input}
                 onChange={handleInputChange}
-                onKeyPress={handleKeyPress}
-                onBlur={(e) => {
+                onKeyDown={handleKeyPress}
+                onBlur={e => {
                   // Solo perder el foco si el clic fue fuera del área del chat
                   const relatedTarget = e.relatedTarget as HTMLElement;
                   if (!e.currentTarget.contains(relatedTarget)) {
