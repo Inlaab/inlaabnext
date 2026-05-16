@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
+import { FormEvent, Suspense, useState } from 'react';
 import MetrycaBackground from './components/MetrycaBackground';
 
 const item = {
@@ -19,34 +19,30 @@ function LoginForm() {
   const [code,    setCode]    = useState('');
   const [error,   setError]   = useState('');
   const [loading, setLoading] = useState(false);
-  const [focused, setFocused] = useState(false);
-
-  useEffect(() => {
-    if (code.trim().length < 3) return;
-    const timer = setTimeout(async () => {
-      setLoading(true);
-      setFocused(false);
-      try {
-        const res = await fetch('/api/verify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code }),
-        });
-        if (res.ok) {
-          router.push(next);
-        } else {
-          const data = await res.json();
-          setError(data.error ?? 'Código incorrecto');
-          setCode('');
-        }
-      } catch {
-        setError('Error de conexión. Intenta nuevamente.');
-      } finally {
-        setLoading(false);
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    if (!code.trim() || loading) return;
+    setError('');
+    setLoading(true);
+    try {
+      const res = await fetch('/api/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code }),
+      });
+      if (res.ok) {
+        router.push(next);
+      } else {
+        const data = await res.json();
+        setError(data.error ?? 'Código incorrecto');
+        setCode('');
       }
-    }, 600);
-    return () => clearTimeout(timer);
-  }, [code, next, router]);
+    } catch {
+      setError('Error de conexión. Intenta nuevamente.');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <main
@@ -139,47 +135,68 @@ function LoginForm() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ type: 'spring', stiffness: 260, damping: 24, delay: 0.45 }}
             >
-              {/* Input con glow al focus */}
-              <motion.div
-                initial={{ boxShadow: '0 0 0 1px rgba(255,255,255,0.08)' }}
-                animate={{
-                  boxShadow: error
-                    ? '0 0 0 1px rgba(185,28,28,0.5)'
-                    : focused
-                    ? '0 0 0 1.5px rgba(220,38,38,0.5), 0 0 24px rgba(220,38,38,0.18)'
-                    : '0 0 0 1px rgba(255,255,255,0.08)',
-                }}
-                transition={{ duration: 0.2 }}
-                style={{ borderRadius: '0.75rem' }}
-              >
-                <input
-                  type="text"
-                  value={code}
-                  onChange={e => {
-                    if (error) setError('');
-                    setCode(e.target.value.toUpperCase());
-                  }}
-                  onFocus={() => setFocused(true)}
-                  onBlur={() => setFocused(false)}
-                  placeholder="· · · · · · · ·"
-                  maxLength={32}
-                  autoComplete="off"
-                  autoCapitalize="characters"
-                  spellCheck={false}
-                  disabled={loading}
-                  className="w-full px-4 py-3 rounded-xl text-center text-base tracking-[0.4em] outline-none disabled:opacity-40"
-                  style={{
-                    background: 'rgba(255,255,255,0.04)',
-                    border: 'none',
-                    color: 'rgba(200,200,200,0.6)',
-                    caretColor: 'rgba(255,255,255,0.4)',
-                  }}
-                />
-              </motion.div>
+              <style>{`
+                @keyframes btnColor {
+                  0%   { background-color: #dc2626; }
+                  33%  { background-color: #f97316; }
+                  66%  { background-color: #fbbe49; }
+                  100% { background-color: #dc2626; }
+                }
+              `}</style>
 
-              <p className="text-[11px] text-center mt-2 h-4" style={{ color: 'rgba(220,38,38,0.9)' }}>
-                {error}
-              </p>
+              <form onSubmit={handleSubmit}>
+                {/* Fila: input + botón cuadrado */}
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={code}
+                    onChange={e => {
+                      if (error) setError('');
+                      setCode(e.target.value.toUpperCase());
+                    }}
+                    placeholder="· · · · · · · ·"
+                    maxLength={32}
+                    autoComplete="off"
+                    autoCapitalize="characters"
+                    spellCheck={false}
+                    disabled={loading}
+                    className="flex-1 min-w-0 px-4 py-3 rounded-xl text-center text-base tracking-[0.4em] outline-none disabled:opacity-40"
+                    style={{
+                      background: 'rgba(255,255,255,0.04)',
+                      border: 'none',
+                      color: 'rgba(200,200,200,0.6)',
+                      caretColor: 'rgba(255,255,255,0.4)',
+                    }}
+                  />
+
+                  <motion.button
+                    type="submit"
+                    disabled={loading || !code.trim()}
+                    whileTap={{ scale: 0.92 }}
+                    className="flex-shrink-0 flex items-center justify-center rounded-xl disabled:opacity-30 disabled:cursor-not-allowed"
+                    style={{
+                      width: '48px',
+                      height: '48px',
+                      animation: 'btnColor 20s ease infinite',
+                      border: 'none',
+                    }}
+                  >
+                    {loading ? (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.7)" strokeWidth="2.5" strokeLinecap="round">
+                        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                      </svg>
+                    ) : (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.7)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                      </svg>
+                    )}
+                  </motion.button>
+                </div>
+
+                <p className="text-[11px] text-center mt-2 h-4" style={{ color: 'rgba(220,38,38,0.9)' }}>
+                  {error}
+                </p>
+              </form>
             </motion.div>
           </div>
         </motion.div>
