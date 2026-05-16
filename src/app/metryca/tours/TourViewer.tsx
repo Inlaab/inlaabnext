@@ -133,7 +133,7 @@ export default function TourViewer({ url, title }: TourViewerProps) {
         <iframe
           src={url}
           style={{ width: "100%", height: "100%", border: "none", display: "block" }}
-          allow="fullscreen; gyroscope; accelerometer"
+          allow="fullscreen; gyroscope; accelerometer; xr-spatial-tracking; camera; microphone; vr; web-share"
           referrerPolicy="origin"
           title={title}
         />
