@@ -22,10 +22,10 @@ function LoginForm() {
   const [focused, setFocused] = useState(false);
 
   useEffect(() => {
-    if (code.trim().length < 3) { setError(''); return; }
+    if (code.trim().length < 3) return;
     const timer = setTimeout(async () => {
-      setError('');
       setLoading(true);
+      setFocused(false);
       try {
         const res = await fetch('/api/verify', {
           method: 'POST',
@@ -135,36 +135,42 @@ function LoginForm() {
             </motion.p>
 
             <motion.div
-              variants={item}
-              initial="hidden"
-              animate="visible"
-              transition={{ delay: 0.45 } as never}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 24, delay: 0.45 }}
             >
               {/* Input con glow al focus */}
               <motion.div
+                initial={{ boxShadow: '0 0 0 1px rgba(255,255,255,0.08)' }}
                 animate={{
-                  boxShadow: focused
+                  boxShadow: error
+                    ? '0 0 0 1px rgba(185,28,28,0.5)'
+                    : focused
                     ? '0 0 0 1.5px rgba(220,38,38,0.5), 0 0 24px rgba(220,38,38,0.18)'
                     : '0 0 0 1px rgba(255,255,255,0.08)',
                 }}
-                transition={{ duration: 0.25 }}
+                transition={{ duration: 0.2 }}
                 style={{ borderRadius: '0.75rem' }}
               >
                 <input
                   type="text"
                   value={code}
-                  onChange={e => setCode(e.target.value.toUpperCase())}
+                  onChange={e => {
+                    if (error) setError('');
+                    setCode(e.target.value.toUpperCase());
+                  }}
                   onFocus={() => setFocused(true)}
                   onBlur={() => setFocused(false)}
                   placeholder="· · · · · · · ·"
                   maxLength={32}
                   autoComplete="off"
+                  autoCapitalize="characters"
                   spellCheck={false}
                   disabled={loading}
-                  className="w-full px-4 py-3 rounded-xl text-center text-base tracking-[0.4em] outline-none transition-colors duration-300 disabled:opacity-40"
+                  className="w-full px-4 py-3 rounded-xl text-center text-base tracking-[0.4em] outline-none disabled:opacity-40"
                   style={{
                     background: 'rgba(255,255,255,0.04)',
-                    border: `1px solid ${error ? 'rgba(185,28,28,0.5)' : 'transparent'}`,
+                    border: 'none',
                     color: 'rgba(200,200,200,0.6)',
                     caretColor: 'rgba(255,255,255,0.4)',
                   }}
@@ -172,7 +178,7 @@ function LoginForm() {
               </motion.div>
 
               <p className="text-[11px] text-center mt-2 h-4" style={{ color: 'rgba(220,38,38,0.9)' }}>
-                {!loading && error}
+                {error}
               </p>
             </motion.div>
           </div>
