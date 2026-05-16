@@ -2,6 +2,7 @@
 
 import SourceCodeProtection from '@/components/SourceCodeProtection';
 import dynamic from 'next/dynamic';
+import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
 // Importación dinámica del componente Footer con SSR deshabilitado
@@ -25,6 +26,8 @@ export default function ClientLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+  const isMetryca = pathname?.startsWith('/metryca');
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -33,6 +36,18 @@ export default function ClientLayout({
         "Hi! I'm ISA, your Inlaab Sales Assistant. How can I help you today?",
     },
   ]);
+
+  if (isMetryca) {
+    return (
+      <html lang="es">
+        <head>
+          <meta charSet="UTF-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        </head>
+        <body>{children}</body>
+      </html>
+    );
+  }
 
   return (
     <html lang="es">
