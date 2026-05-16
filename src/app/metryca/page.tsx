@@ -1,7 +1,15 @@
 'use client';
 
+import Image from 'next/image';
+import { motion } from 'framer-motion';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { FormEvent, Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
+import MetrycaBackground from './components/MetrycaBackground';
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 260, damping: 24 } },
+};
 
 function LoginForm() {
   const router       = useRouter();
@@ -11,161 +19,174 @@ function LoginForm() {
   const [code,    setCode]    = useState('');
   const [error,   setError]   = useState('');
   const [loading, setLoading] = useState(false);
+  const [focused, setFocused] = useState(false);
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-    try {
-      const res = await fetch('/api/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code }),
-      });
-      if (res.ok) {
-        router.push(next);
-      } else {
-        const data = await res.json();
-        setError(data.error ?? 'Código incorrecto');
+  useEffect(() => {
+    if (code.trim().length < 3) { setError(''); return; }
+    const timer = setTimeout(async () => {
+      setError('');
+      setLoading(true);
+      try {
+        const res = await fetch('/api/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code }),
+        });
+        if (res.ok) {
+          router.push(next);
+        } else {
+          const data = await res.json();
+          setError(data.error ?? 'Código incorrecto');
+          setCode('');
+        }
+      } catch {
+        setError('Error de conexión. Intenta nuevamente.');
+      } finally {
+        setLoading(false);
       }
-    } catch {
-      setError('Error de conexión. Intenta nuevamente.');
-    } finally {
-      setLoading(false);
-    }
-  }
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [code, next, router]);
 
   return (
     <main
       className="relative min-h-screen flex flex-col items-center justify-center px-4 overflow-hidden"
       style={{ background: '#0f0f0f' }}
     >
-      <style>{`
-        @keyframes btnColor {
-          0%   { background-color: #dc2626; }
-          33%  { background-color: #f97316; }
-          66%  { background-color: #fbbe49; }
-          100% { background-color: #dc2626; }
-        }
-      `}</style>
-      {/* Glow decorativo */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div
-          className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full"
-          style={{ background: '#b91c1c', filter: 'blur(140px)', opacity: 0.06 }}
-        />
-      </div>
+      <MetrycaBackground />
 
-      <div className="relative w-full max-w-sm">
+      <div className="relative w-full max-w-sm z-10">
 
-        {/* Marca */}
-        <div className="text-center mb-10">
-          <p
-            className="text-[10px] tracking-[0.5em] uppercase mb-3"
-            style={{ color: 'rgba(255,255,255,0.25)', animation: 'fadeIn 0.6s ease 0.1s both' }}
+        {/* Logo */}
+        <motion.div
+          className="flex flex-col items-center mb-10"
+          initial={{ opacity: 0, y: -28 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'spring', stiffness: 200, damping: 22, delay: 0.05 }}
+        >
+          <motion.div
+            animate={{ y: [0, -6, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
           >
-            INLAAB
-          </p>
-          <h1
-            className="text-5xl font-bold text-white leading-tight"
-            style={{ fontFamily: 'var(--font-playfair, Georgia, serif)', animation: 'slideUp 0.7s ease 0.2s both' }}
-          >
-            Metryca
-          </h1>
-          <p
+            <Image
+              src="/Logo Metryca.svg"
+              alt="Metryca"
+              width={220}
+              height={118}
+              style={{ filter: 'brightness(0) invert(1)' }}
+              priority
+            />
+          </motion.div>
+          <motion.p
             className="text-[10px] tracking-[0.4em] uppercase mt-3"
-            style={{ color: 'rgba(255,255,255,0.2)', animation: 'fadeIn 0.6s ease 0.4s both' }}
+            style={{ color: 'rgba(255,255,255,0.2)' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
           >
             recorridos 360°
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
 
-        {/* Border Beam Card */}
-        <div
+        {/* Card glassmorfismo con border-beam */}
+        <motion.div
+          initial={{ opacity: 0, y: 32 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'spring', stiffness: 220, damping: 26, delay: 0.18 }}
           style={{
-            position:     'relative',
+            position: 'relative',
             borderRadius: '1rem',
-            padding:      '1px',
-            overflow:     'hidden',
-            animation:    'slideUp 0.7s ease 0.35s both',
+            padding: '1px',
+            overflow: 'hidden',
           }}
         >
           {/* Beam giratorio */}
-          <div
+          <motion.div
             className="animate-spin"
             style={{
-              position:              'absolute',
-              width:                 '200%',
-              height:                '200%',
-              top:                   '-50%',
-              left:                  '-50%',
-              animationDuration:     '5s',
+              position: 'absolute',
+              width: '200%', height: '200%',
+              top: '-50%', left: '-50%',
+              animationDuration: '5s',
               animationTimingFunction: 'linear',
-              background:            'conic-gradient(from 0deg, transparent 60%, rgba(153,27,27,0.4) 74%, rgba(220,38,38,0.85) 82%, rgba(153,27,27,0.4) 89%, transparent 100%)',
+              background: 'conic-gradient(from 0deg, transparent 60%, rgba(153,27,27,0.5) 74%, rgba(220,38,38,0.9) 82%, rgba(153,27,27,0.5) 89%, transparent 100%)',
             }}
           />
 
-          {/* Card interior */}
+          {/* Card interior — glassmorfismo */}
           <div
             style={{
-              position:     'relative',
+              position: 'relative',
               borderRadius: 'calc(1rem - 1px)',
-              background:   'linear-gradient(145deg, #1a1a1a 0%, #111111 100%)',
-              padding:      '2rem',
+              background: 'rgba(12,12,12,0.88)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
+              padding: '2rem',
             }}
           >
-            <p className="text-[11px] tracking-[0.3em] text-white/25 text-center uppercase mb-7">
+            <motion.p
+              className="text-[11px] tracking-[0.3em] text-white/25 text-center uppercase mb-7"
+              variants={item}
+              initial="hidden"
+              animate="visible"
+              transition={{ delay: 0.35 } as never}
+            >
               Ingresa tu código de acceso
-            </p>
+            </motion.p>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
+            <motion.div
+              variants={item}
+              initial="hidden"
+              animate="visible"
+              transition={{ delay: 0.45 } as never}
+            >
+              {/* Input con glow al focus */}
+              <motion.div
+                animate={{
+                  boxShadow: focused
+                    ? '0 0 0 1.5px rgba(220,38,38,0.5), 0 0 24px rgba(220,38,38,0.18)'
+                    : '0 0 0 1px rgba(255,255,255,0.08)',
+                }}
+                transition={{ duration: 0.25 }}
+                style={{ borderRadius: '0.75rem' }}
+              >
                 <input
                   type="text"
                   value={code}
                   onChange={e => setCode(e.target.value.toUpperCase())}
+                  onFocus={() => setFocused(true)}
+                  onBlur={() => setFocused(false)}
                   placeholder="· · · · · · · ·"
                   maxLength={32}
                   autoComplete="off"
                   spellCheck={false}
-                  className="w-full px-4 py-3 rounded-xl text-center text-base tracking-[0.4em] outline-none transition-all duration-300"
+                  disabled={loading}
+                  className="w-full px-4 py-3 rounded-xl text-center text-base tracking-[0.4em] outline-none transition-colors duration-300 disabled:opacity-40"
                   style={{
                     background: 'rgba(255,255,255,0.04)',
-                    border:     `1px solid ${error ? 'rgba(185,28,28,0.5)' : 'rgba(255,255,255,0.10)'}`,
-                    color:      'rgba(200,200,200,0.55)',
+                    border: `1px solid ${error ? 'rgba(185,28,28,0.5)' : 'transparent'}`,
+                    color: 'rgba(200,200,200,0.6)',
                     caretColor: 'rgba(255,255,255,0.4)',
                   }}
                 />
-                {error && (
-                  <p className="text-[11px] text-center mt-2" style={{ color: 'rgba(220,38,38,0.9)' }}>
-                    {error}
-                  </p>
-                )}
-              </div>
+              </motion.div>
 
-              <button
-                type="submit"
-                disabled={loading || !code.trim()}
-                className="w-full py-3 rounded-xl text-[11px] tracking-[0.35em] uppercase font-semibold disabled:opacity-25 disabled:cursor-not-allowed"
-                style={{
-                  backgroundColor: '#dc2626',
-                  animation:       'btnColor 20s ease infinite',
-                  color:           '#1a0800',
-                  border:          'none',
-                }}
-              >
-                {loading ? 'Verificando...' : 'Ingresar'}
-              </button>
-            </form>
+              <p className="text-[11px] text-center mt-2 h-4" style={{ color: 'rgba(220,38,38,0.9)' }}>
+                {!loading && error}
+              </p>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
 
-        <p
+        <motion.p
           className="text-center text-[10px] tracking-[0.4em] uppercase mt-8"
-          style={{ color: 'rgba(255,255,255,0.1)', animation: 'fadeIn 0.6s ease 0.7s both' }}
+          style={{ color: 'rgba(255,255,255,0.1)' }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.65, duration: 0.6 }}
         >
           Acceso privado · Solo usuarios autorizados
-        </p>
+        </motion.p>
       </div>
     </main>
   );
