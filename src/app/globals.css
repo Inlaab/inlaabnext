@@ -280,6 +280,11 @@ html {
   animation: slideUp 0.5s ease-out;
 }
 
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
 /* Chat open state - padding automático sincronizado */
 .chat-open #main-content {
   @apply lg:pr-96;
