@@ -1,6 +1,7 @@
 'use client';
 
 import SourceCodeProtection from '@/components/SourceCodeProtection';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
@@ -44,7 +45,10 @@ export default function ClientLayout({
           <meta charSet="UTF-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         </head>
-        <body>{children}</body>
+        <body>
+          {children}
+          <SpeedInsights />
+        </body>
       </html>
     );
   }
@@ -107,6 +111,7 @@ export default function ClientLayout({
           id="chat-overlay"
           className="fixed inset-0 bg-transparent z-30 opacity-0 pointer-events-none transition-opacity duration-300"
         ></div>
+        <SpeedInsights />
       </body>
     </html>
   );
